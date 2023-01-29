@@ -1,0 +1,94 @@
+from nltk.tokenize import *
+import sys
+from math import ceil
+import re
+file_name = sys.argv[1]
+#file_name = "test.txt"
+
+class TextInterpretation:
+
+    def open_file(file_name):
+        with open(file_name, "r") as file:
+            return file.read()
+    def Text(file):
+        return TextInterpretation.open_file(file)
+    def NumberSymbols(file):
+        return len((re.findall(r"[^ \n\t]", TextInterpretation.open_file(file))))
+    def NumberSentences(file):
+        return len(sent_tokenize(TextInterpretation.open_file(file)))
+    def NumberWords(file):
+        return regexp_tokenize(TextInterpretation.open_file(file), r"[0-9A-z']+")
+    def NumberSyllables(file):
+        syllables = len([i for i in re.findall("([aiouy]|e(?!\\s))+", TextInterpretation.open_file(file).lower())])
+        return syllables
+    def difficultWords(file):
+        filec = textinterpretation.NumberWords(file)
+        def FileClear(filec):
+
+            filec = [x.lower() for x in filec]
+            filec = sorted(filec)
+            return filec
+        #print(FileClear(filec))
+        with open(sys.argv[2], "r") as LC3000:
+        #with open("Longman-Communication-3000.txt", "r") as LC3000:
+            LC3000 = LC3000.read()
+            LC3000 = regexp_tokenize(LC3000, r"[0-9A-z']+")
+            LC3000 = [x.lower() for x in LC3000]
+
+        #listdifficultwords = list(set(FileClear(filec)).difference(LC3000))
+        listdifficultwords = [element for element in filec if element not in LC3000]
+        #print(listdifficultwords)
+        return len(listdifficultwords)
+
+
+class Score(TextInterpretation):
+    def __init__(self):
+        self.num_sym = TextInterpretation.NumberSymbols(file_name)
+        self.num_sent = TextInterpretation.NumberSentences(file_name)
+        self.num_word = len(TextInterpretation.NumberWords(file_name))
+        self.num_syllables = TextInterpretation.NumberSyllables(file_name)
+        self.difficultwords = TextInterpretation.difficultWords(file_name)
+
+    def auto_score(self):
+        autoscore = ceil(self.num_sym * 4.71 / self.num_word + 0.5 * self.num_word / self.num_sent - 21.43)
+        return autoscore
+
+    def FK_score(self):
+        fkscore = ceil(0.39 * self.num_word / self.num_sent + 11.8 * self.num_syllables/ self.num_word -15.59)
+        return fkscore
+    def DC_score(self):
+        dcscore = ceil(0.1579 * (self.difficultwords / self.num_word) * 100 + 0.0496 * self.num_word / self.num_sent)
+        return dcscore
+
+class Recommendation(Score):
+    def Recomm(recom):
+        if recom == "auto_score":
+            print("Automated Readability Index: {} (about year {} - {} old)".format(Score().auto_score(),
+                                                                                    Score().auto_score() + 4,
+                                                                                    Score().auto_score() + 5))
+
+        elif recom == "FK_score":
+            print("Flesch–Kincaid Readability Test: {} (about year {} - {} old)".format(Score().FK_score(),
+                                                                                    Score().FK_score() + 4,
+                                                                                    Score().FK_score() + 5))
+        elif recom == "DC_score":
+            print("Dale–Chall Readability Test: {} (about year {} - {} old)".format(Score().DC_score(),
+                                                                                    Score().DC_score() + 4,
+                                                                                    Score().DC_score() + 5))
+
+
+textinterpretation = TextInterpretation
+print("Test:", textinterpretation.Text(file_name))
+print("Characters:", textinterpretation.NumberSymbols(file_name))
+print("Sentences:", textinterpretation.NumberSentences(file_name))
+print("Words:", len(textinterpretation.NumberWords(file_name)))
+print("Difficult words:", (textinterpretation.difficultWords(file_name)))
+print("Syllables:", textinterpretation.NumberSyllables(file_name))
+
+#print("TEST", Score.auto_score())
+recommendation = Recommendation
+recommendation.Recomm(recom="auto_score")
+recommendation.Recomm(recom="FK_score")
+recommendation.Recomm(recom ="DC_score")
+print("This text should be understood in average by {} year olds.".format(
+    (Score().auto_score() + 5 + Score().FK_score() + 5 + Score().DC_score() + 5) / 3))
